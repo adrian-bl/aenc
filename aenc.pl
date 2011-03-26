@@ -58,7 +58,7 @@ package Aenc::Generic;
 		my($self,$infile) = @_;
 		my $tmp = "tmp.$$.".int(rand(0xFFFF)).".avi";
 		$self->info("Creating tempfile ($tmp)");
-		system("mencoder", "-oac", "faac", "-faacopts", "quality=850", "-ovc", "lavc", "-lavcopts", "vcodec=mpeg4:vbitrate=8120000", "-o", $tmp, $infile);
+		system("mencoder", "-oac", "mp3lame", "-lameopts", "preset=insane", "-ovc", "lavc", "-lavcopts", "vcodec=mpeg4:vbitrate=8120000", "-o", $tmp, $infile);
 		return $tmp;
 	}
 	
@@ -67,12 +67,13 @@ package Aenc::Generic;
 	sub do_hardsub {
 		my($self,$in,$out) = @_;
 		my $hsub = $self->do_mencoder_hardsub($in);
-		if(-f $out) {
+		if(-f $hsub) {
 			$self->do_mpeg4($hsub,$out);
 			unlink($hsub) or die "Could not unlink `$hsub': $!\n";
 		}
 		else {
 			$self->critical("Failed to mencode `$in'");
+			unlink($hsub);
 		}
 	}
 	
