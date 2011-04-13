@@ -8,7 +8,7 @@ GetOptions($opts, "profile=s", "hardsub");
 
 my $subclass = Aenc::Init->($opts->{profile});
 
-die "Usage: $0 --profile=[legend|defy|defylq] [--hardsub] INPUT\n" unless $subclass;
+die "Usage: $0 --profile=[legend|defy|defyhq] [--hardsub] INPUT\n" unless $subclass;
 
 foreach my $infile (@ARGV) {
 	my ($outfile) = $infile =~ /(.+)\....$/;
@@ -29,9 +29,9 @@ foreach my $infile (@ARGV) {
 package Aenc;
 	sub Init {
 		my($pn) = @_;
-		return Aenc::Legend->new if $pn eq 'legend';
-		return Aenc::Defy->new   if $pn eq 'defy';
-		return Aenc::DefyLQ->new if $pn eq 'defylq';
+		return Aenc::Legend->new   if $pn eq 'legend';
+		return Aenc::Defy->new     if $pn eq 'defy';
+		return Aenc::DefyHQ->new   if $pn eq 'defyhq';
 		return undef;
 	}
 1;
@@ -104,13 +104,7 @@ package Aenc::Generic;
 	###############################################
 	# even more x264 opts!
 	sub get_vcodec_extargs {
-		return qw(-flags +loop -cmp +chroma
-		            -partitions +parti4x4+partp8x8+partb8x8
-		            -flags2 +mixed_refs -me_method umh -subq 5
-		            -trellis 1 -refs 5 -coder 0 -me_range 16
-		            -g 250 -keyint_min 25 -sc_threshold 40 -i_qfactor 0.71
-		            -rc_eq 'blurCplx^(1-qComp)' -qcomp 0.6 -qmin 10
-		            -qmax 51 -qdiff 4 -level 13);
+		return qw(-vpre medium -vpre baseline);
 	}
 	
 1;
@@ -126,7 +120,7 @@ package Aenc::Legend;
 	
 1;
 
-package Aenc::Defy;
+package Aenc::DefyHQ;
 	use base 'Aenc::Generic';
 	sub new {
 		my($classname,%args) = @_;
@@ -140,7 +134,7 @@ package Aenc::Defy;
 	}
 1;
 
-package Aenc::DefyLQ;
+package Aenc::Defy;
 	use base 'Aenc::Generic';
 	sub new {
 		my($classname,%args) = @_;
@@ -150,6 +144,6 @@ package Aenc::DefyLQ;
 	###############################################
 	# Set resolution to native-defyness
 	sub get_vcodec_args {
-		return qw(-vcodec libx264 -s 640x360 -b 700k -maxrate 1200k -bufsize 2M);
+		return qw(-vcodec libx264 -s 640x360 -b 400k -maxrate 800k -bufsize 2M);
 	}
 1;
