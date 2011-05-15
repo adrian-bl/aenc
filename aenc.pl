@@ -58,7 +58,7 @@ package Aenc::Generic;
 		my($self,$infile) = @_;
 		my $tmp = "tmp.$$.".int(rand(0xFFFF)).".avi";
 		$self->info("Creating tempfile ($tmp)");
-		system("mencoder", "-oac", "mp3lame", "-lameopts", "preset=insane", "-ovc", "lavc", "-lavcopts", "vcodec=mpeg4:vbitrate=8120000", "-o", $tmp, $infile);
+		system("mencoder", "-oac", "mp3lame", "-lameopts", "preset=insane", "-ovc", "lavc", "-lavcopts", "vcodec=ffv1", "-o", $tmp, $infile);
 		return $tmp;
 	}
 	
@@ -104,7 +104,7 @@ package Aenc::Generic;
 	###############################################
 	# even more x264 opts!
 	sub get_vcodec_extargs {
-		return qw(-vpre medium -vpre baseline);
+		return qw(-vpre baseline);
 	}
 	
 1;
