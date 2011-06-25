@@ -8,7 +8,7 @@ GetOptions($opts, "profile=s", "hardsub");
 
 my $subclass = Aenc::Init->($opts->{profile});
 
-die "Usage: $0 --profile=[legend|defy|defyhq] [--hardsub] INPUT\n" unless $subclass;
+die "Usage: $0 --profile=[legend|defy|defyhq|hq2] [--hardsub] INPUT\n" unless $subclass;
 
 foreach my $infile (@ARGV) {
 	my ($outfile) = $infile =~ /(.+)\....$/;
@@ -32,6 +32,7 @@ package Aenc;
 		return Aenc::Legend->new   if $pn eq 'legend';
 		return Aenc::Defy->new     if $pn eq 'defy';
 		return Aenc::DefyHQ->new   if $pn eq 'defyhq';
+		return Aenc::HQ2->new      if $pn eq 'hq2';
 		return undef;
 	}
 1;
@@ -83,9 +84,19 @@ package Aenc::Generic;
 		my($self,$in,$out) = @_;
 		$self->info("Converting `$in' into `$out'");
 		
-		my @ff = ("ffmpeg", "-i", $in,$self->get_vcodec_args, $self->get_vcodec_extargs, $self->get_acodec_args, $out);
-		$self->info(join(" ",@ff));
-		system(@ff);
+		if($self->do_twopass) {
+			foreach my $pass (1..2) {
+				print "# pass $pass\n";
+				my @ff = ("ffmpeg", "-y", "-pass", $pass, "-t", "120", "-i", $in,$self->get_vcodec_args, $self->get_vcodec_extargs, $self->get_acodec_args, $out);
+				$self->info(join(" ",@ff));
+				system(@ff);
+			}
+		}
+		else {
+			my @ff = ("ffmpeg", "-i", $in,$self->get_vcodec_args, $self->get_vcodec_extargs, $self->get_acodec_args, $out);
+			$self->info(join(" ",@ff));
+			system(@ff);
+		}
 	}
 	
 	###############################################
@@ -104,7 +115,11 @@ package Aenc::Generic;
 	###############################################
 	# even more x264 opts!
 	sub get_vcodec_extargs {
-		return qw(-vpre baseline);
+		return qw(-profile baseline -threads 0);
+	}
+	
+	sub do_twopass {
+		return 0;
 	}
 	
 1;
@@ -147,3 +162,25 @@ package Aenc::Defy;
 		return qw(-vcodec libx264 -s 640x360 -b 400k -maxrate 800k -bufsize 2M);
 	}
 1;
+
+
+package Aenc::HQ2;
+	use base 'Aenc::Generic';
+	sub new {
+		my($classname,%args) = @_;
+		my $self = {};
+		return bless($self,$classname);
+	}
+	
+	sub do_twopass {
+		return 1;
+	}
+	
+	###############################################
+	# Set resolution to native-defyness
+	sub get_vcodec_args {
+		return qw(-vcodec libx264 -s 854x480 -b 950k -maxrate 1900k -bufsize 2M);
+	}
+	
+1;
+
