@@ -87,7 +87,7 @@ package Aenc::Generic;
 		if($self->do_twopass) {
 			foreach my $pass (1..2) {
 				print "# pass $pass\n";
-				my @ff = ("ffmpeg", "-y", "-pass", $pass, "-t", "120", "-i", $in,$self->get_vcodec_args, $self->get_vcodec_extargs, $self->get_acodec_args, $out);
+				my @ff = ("ffmpeg", "-y", "-pass", $pass, "-i", $in,$self->get_vcodec_args, $self->get_vcodec_extargs, $self->get_acodec_args, $out);
 				$self->info(join(" ",@ff));
 				system(@ff);
 			}
