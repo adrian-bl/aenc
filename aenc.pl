@@ -59,7 +59,18 @@ package Aenc::Generic;
 		my($self,$infile) = @_;
 		my $tmp = "tmp.$$.".int(rand(0xFFFF)).".avi";
 		$self->info("Creating tempfile ($tmp)");
-		system("mencoder", "-oac", "mp3lame", "-lameopts", "preset=insane", "-ovc", "lavc", "-lavcopts", "vcodec=ffv1", "-o", $tmp, $infile);
+		
+		my @forced_aid = ();
+		my @forced_sid = ();
+		
+		if(exists($ENV{FORCE_SID})) {
+			push(@forced_sid, "-sid", $ENV{FORCE_SID});
+		}
+		if(exists($ENV{FORCE_AID})) {
+			push(@forced_aid, "-aid", $ENV{FORCE_AID});
+		}
+		
+		system("mencoder", "-oac", "pcm", "-ovc", "lavc", "-lavcopts", "vcodec=ffv1", @forced_sid, @forced_aid, "-o", $tmp, $infile);
 		return $tmp;
 	}
 	
@@ -103,7 +114,7 @@ package Aenc::Generic;
 	# Return (generic) faac opts
 	sub get_acodec_args {
 		my($self) = @_;
-		return qw(-acodec libfaac -ab 128k);
+		return qw(-acodec libfaac -ab 128k -ar 44100);
 	}
 	
 	###############################################
