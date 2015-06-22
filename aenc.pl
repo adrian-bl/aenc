@@ -1,7 +1,13 @@
 #!/usr/bin/perl
 use strict;
+use Getopt::Long;
+
+my $getopts = {};
+GetOptions($getopts, "nosubs") or exit 1;
+
 
 die "Usage: $0 FILE_LIST\n" unless int(@ARGV);
+
 
 foreach my $input_file (@ARGV) {
 
@@ -10,14 +16,18 @@ foreach my $input_file (@ARGV) {
 
 	my $tmp_file = $part_name."_tmp.mp4";
 	my $out_file = $part_name."_encoded.mp4";
+	my $scaler   = 'scale=1024:576';
+	   $scaler  .= ',subtitles=\''.$input_file.'\'' unless $getopts->{nosubs};
 
 	my @cmdlist = ('-i',         $input_file,
-	               '-vf',        'scale=1024:576,subtitles=\''.$input_file.'\'',
+	               '-vf',        $scaler,
 	               '-c:v',       'libx264',
 	               '-profile:v', 'baseline',
 	               '-c:a',       'libfaac',
 	               '-ar',        '44100',
 	               '-ac',        '2',
+	               '-clev',      '1.814',
+	               '-slev',      '.5',
 	               '-b:a',       '128k',
 	               '-preset',    'medium',
 	               $tmp_file);
