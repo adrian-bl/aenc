@@ -22,7 +22,6 @@ foreach my $input_file (@ARGV) {
 	my @cmdlist = ('-i',         $input_file,
 	               '-vf',        $scaler,
 	               '-c:v',       'libx264',
-	               '-profile:v', 'baseline',
 	               '-c:a',       'libfaac',
 	               '-ar',        '44100',
 	               '-ac',        '2',
@@ -30,10 +29,12 @@ foreach my $input_file (@ARGV) {
 	               '-slev',      '.5',
 	               '-b:a',       '128k',
 	               '-preset',    'medium',
+	               '-tune',      'animation',
+	               '-crf',       22,
 	               $tmp_file);
 
 	unlink($tmp_file); # do not waste time waiting for input
 
-	my $rv = system("ffmpeg-26", @cmdlist);
+	my $rv = system("ffmpeg", @cmdlist);
 	rename($tmp_file, $out_file) if !$rv;
 }
