@@ -3,12 +3,15 @@ use strict;
 use Getopt::Long;
 
 my $getopts = {};
-GetOptions($getopts, "hardsub", "nosub", "mp4") or exit 1;
+GetOptions($getopts, "hardsub", "nosub", "mp4", "hq") or exit 1;
 
 
-die "Usage: $0 [--hardsub --nosub --mp4] FILE_LIST\n" unless int(@ARGV);
+die "Usage: $0 [--hardsub --nosub --mp4 --hq] FILE_LIST\n" unless int(@ARGV);
 
 my $FEXT = ($getopts->{mp4} ? "mp4" : "mkv");
+my $EEXT = ($getopts->{hq}  ? "_hq-encoded" : "_encoded");
+my $RES  = ($getopts->{hq}  ? "1028:544" : "1024:576");
+my $CRF  = ($getopts->{hq}  ? 18 : 22);
 
 # mp4 does not support embedded subs: enable hardsub unless copy was disabled
 $getopts->{hardsub} = 1 if $getopts->{mp4} && !$getopts->{nosub};
@@ -19,8 +22,8 @@ foreach my $input_file (@ARGV) {
 	next unless $part_name;
 
 	my $tmp_file = $part_name."_tmp.$FEXT";
-	my $out_file = $part_name."_encoded.$FEXT";
-	my $scaler   = 'scale=1024:576';
+	my $out_file = $part_name.$EEXT.".".$FEXT;
+	my $scaler   = 'scale='.$RES;
 	   $scaler  .= ',subtitles=\''.$input_file.'\'' if ($getopts->{hardsub});
 
 	my @cmdlist = ('-i',         $input_file,
@@ -34,7 +37,7 @@ foreach my $input_file (@ARGV) {
 	               '-b:a',       '128k',
 	               '-preset',    'medium',
 	               '-tune',      'animation',
-	               '-crf',       22);
+	               '-crf',       $CRF);
 
 	if (!$getopts->{mp4} && !$getopts->{nosub} && !$getopts->{hardsub}) {
 		push(@cmdlist, qw(-scodec copy));
